@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
+  biometric_signature:
+    dependency: "direct main"
+    description:
+      name: biometric_signature
+      sha256: "0d22580388e5cc037f6f829b29ecda74e343fd61d26c55e33cbcf48a48e5c1dc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.2.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -139,6 +147,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
+  plugin_platform_interface:
+    dependency: transitive
+    description:
+      name: plugin_platform_interface
+      sha256: "4820fbfdb9478b1ebae27888254d445073732dae3d6ea81f0b7e06d5dedc3f02"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.8"
   sky_engine:
     dependency: transitive
     description: flutter
