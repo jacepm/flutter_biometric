@@ -2,7 +2,7 @@
 
 This document explains how to implement backend support for the Flutter biometric R&D app in this repository.
 
-The current app in [lib/main.dart](/d:/Work/jacepm/flutter_biometric/lib/main.dart) does two core things:
+The current app in [lib/main.dart](flutter_biometric/lib/main.dart) does two core things:
 
 1. Generates a public/private key pair on the device using `biometric_signature`
 2. Signs a challenge string using the device-protected private key
@@ -363,7 +363,7 @@ Before integrating with a real backend, replace that flow with:
 
 ## Suggested Next Step
 
-After this document, the next useful change would be updating [lib/main.dart](/d:/Work/jacepm/flutter_biometric/lib/main.dart) to:
+After this document, the next useful change would be updating [lib/main.dart](flutter_biometric/lib/main.dart) to:
 
 1. call a backend endpoint for a challenge
 2. sign the returned challenge
