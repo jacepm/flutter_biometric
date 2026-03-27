@@ -16,7 +16,7 @@ This Flutter app is a small research project for testing hardware-backed biometr
 
 ## Current App Flow
 
-The UI in [lib/main.dart](/d:/Work/jacepm/flutter_biometric/lib/main.dart) includes these actions:
+The UI in [lib/main.dart](flutter_biometric/lib/main.dart) includes these actions:
 
 1. `Check Biometric Availability`
    Verifies whether the current device can authenticate and whether biometrics are enrolled.
@@ -39,7 +39,7 @@ This R&D app now matches the Android requirements of `biometric_signature`.
 
 ### 1. Dependency
 
-Add this dependency in [pubspec.yaml](/d:/Work/jacepm/flutter_biometric/pubspec.yaml):
+Add this dependency in [pubspec.yaml](flutter_biometric/pubspec.yaml):
 
 ```yaml
 dependencies:
@@ -48,7 +48,7 @@ dependencies:
 
 ### 2. Biometric Permission
 
-Ensure [android/app/src/main/AndroidManifest.xml](/d:/Work/jacepm/flutter_biometric/android/app/src/main/AndroidManifest.xml) contains:
+Ensure [android/app/src/main/AndroidManifest.xml](flutter_biometric/android/app/src/main/AndroidManifest.xml) contains:
 
 ```xml
 <uses-permission android:name="android.permission.USE_BIOMETRIC" />
@@ -58,7 +58,7 @@ Ensure [android/app/src/main/AndroidManifest.xml](/d:/Work/jacepm/flutter_biomet
 
 `biometric_signature` requires a fragment-based activity on Android.
 
-[android/app/src/main/kotlin/com/example/flutter_biometric/MainActivity.kt](/d:/Work/jacepm/flutter_biometric/android/app/src/main/kotlin/com/example/flutter_biometric/MainActivity.kt):
+[android/app/src/main/kotlin/com/example/flutter_biometric/MainActivity.kt](flutter_biometric/android/app/src/main/kotlin/com/example/flutter_biometric/MainActivity.kt):
 
 ```kotlin
 package com.example.flutter_biometric
@@ -72,7 +72,7 @@ class MainActivity : FlutterFragmentActivity()
 
 The plugin requires Android SDK 24 or newer.
 
-[android/app/build.gradle.kts](/d:/Work/jacepm/flutter_biometric/android/app/build.gradle.kts):
+[android/app/build.gradle.kts](flutter_biometric/android/app/build.gradle.kts):
 
 ```kotlin
 defaultConfig {
@@ -94,7 +94,7 @@ flutter pub get
 
 ## iOS Setup
 
-Face ID usage text is already defined in [ios/Runner/Info.plist](/d:/Work/jacepm/flutter_biometric/ios/Runner/Info.plist):
+Face ID usage text is already defined in [ios/Runner/Info.plist](flutter_biometric/ios/Runner/Info.plist):
 
 ```xml
 <key>NSFaceIDUsageDescription</key>
@@ -143,6 +143,37 @@ For reliable testing:
 - Start with `Check Biometric Availability` before generating keys
 - If signing fails, read the displayed error code and reason from the app UI
 - Use `Delete Keys` between test cycles if you want a clean reset
+
+## iOS Testing
+
+To test on iPhone:
+
+- Open the iOS project in Xcode or run `flutter run` with an iOS device connected
+- Make sure Face ID or Touch ID is enrolled on the device
+- Launch the app and allow biometric access when prompted
+- Tap `Check Biometric Availability`
+- Tap `Generate Keys`
+- Tap `Sign Challenge`
+
+To test on the iOS simulator:
+
+- Start an iPhone simulator
+- In the simulator, enable biometric enrollment for the simulated device
+- Run the app
+- Use the simulator menu to trigger a matching or non-matching Face ID or Touch ID event during the prompt
+
+Expected behavior:
+
+- `Check Biometric Availability` should show that authentication is available
+- `Generate Keys` should return a public key
+- `Sign Challenge` should return a signature
+
+If iOS fails:
+
+- confirm the device has biometrics enrolled
+- confirm [Info.plist](flutter_biometric/ios/Runner/Info.plist#L48) contains `NSFaceIDUsageDescription`
+- check the error shown in the app UI
+- retry on a real device if simulator behavior is inconsistent
 
 ## Troubleshooting
 
