@@ -1,76 +1,175 @@
 # flutter_biometric
 
-Biometric R&D Demo using `biometric_signature`
+Biometric R&D demo using `biometric_signature`.
 
-This Flutter app demonstrates how to use the `biometric_signature` package for secure, hardware-backed biometric authentication and digital signatures.
+This Flutter app is a small research project for testing hardware-backed biometric authentication and digital signatures across supported platforms. It focuses on local key generation, challenge signing, and visibility into biometric availability and plugin error states.
 
-## Features
+## What This R&D App Does
 
-- Generate a biometric-protected public/private key pair on the device
-- Sign a backend-provided challenge using biometrics (fingerprint/face)
-- Display the public key and signature in the UI
+- Generates a biometric-protected key pair on-device
+- Signs a sample challenge using biometric authentication
+- Displays the generated public key in PEM format
+- Displays the generated signature
+- Checks whether biometrics are available and enrolled on the device
+- Deletes stored biometric keys for repeatable testing
+- Surfaces plugin result codes and error messages in the UI
 
-## How it works
+## Current App Flow
 
-1. **Generate Keys**: Tapping "Generate Keys" creates a new key pair protected by the device's biometrics. The public key is shown in the app and should be sent to your backend for registration.
-2. **Sign Challenge**: Tapping "Sign Challenge" signs a challenge string (e.g., from your backend) using the private key. The user must authenticate with biometrics. The resulting signature is shown and should be sent to your backend for verification.
+The UI in [lib/main.dart](/d:/Work/jacepm/flutter_biometric/lib/main.dart) includes these actions:
 
-## Backend Integration
+1. `Check Biometric Availability`
+   Verifies whether the current device can authenticate and whether biometrics are enrolled.
+2. `Generate Keys`
+   Creates a biometric-protected key pair and shows the public key.
+3. `Sign Challenge`
+   Signs the sample payload `sample_challenge_123` using the stored private key.
+4. `Delete Keys`
+   Clears generated biometric keys so the flow can be tested again from scratch.
 
-Your backend should:
+If an operation fails, the app shows the plugin `code` and `error` returned by `biometric_signature`.
 
-- Store the user's public key when first generated.
-- Issue a random challenge string for authentication attempts.
-- Verify the signature using the stored public key and the challenge.
+## Why This Matters
 
-**Never store the private key or biometric data on the backend.**
+Unlike a simple biometric prompt that only returns `true` or `false`, `biometric_signature` uses device-protected keys and returns a cryptographic signature. That means a backend can verify that the request came from a device holding the registered private key, not just from a screen that was locally unlocked.
 
-## Setup
+## Android Setup
 
-1. Add the dependency in `pubspec.yaml`:
-   ```yaml
-   biometric_signature: ^10.2.0
-   ```
-2. For Android, ensure you have the following permission in `android/app/src/main/AndroidManifest.xml`:
-   ```xml
-   <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
-   ```
-3. Run `flutter pub get` to install dependencies.
+This R&D app now matches the Android requirements of `biometric_signature`.
+
+### 1. Dependency
+
+Add this dependency in [pubspec.yaml](/d:/Work/jacepm/flutter_biometric/pubspec.yaml):
+
+```yaml
+dependencies:
+  biometric_signature: ^10.2.0
+```
+
+### 2. Biometric Permission
+
+Ensure [android/app/src/main/AndroidManifest.xml](/d:/Work/jacepm/flutter_biometric/android/app/src/main/AndroidManifest.xml) contains:
+
+```xml
+<uses-permission android:name="android.permission.USE_BIOMETRIC" />
+```
+
+### 3. Use `FlutterFragmentActivity`
+
+`biometric_signature` requires a fragment-based activity on Android.
+
+[android/app/src/main/kotlin/com/example/flutter_biometric/MainActivity.kt](/d:/Work/jacepm/flutter_biometric/android/app/src/main/kotlin/com/example/flutter_biometric/MainActivity.kt):
+
+```kotlin
+package com.example.flutter_biometric
+
+import io.flutter.embedding.android.FlutterFragmentActivity
+
+class MainActivity : FlutterFragmentActivity()
+```
+
+### 4. Set `minSdk` to 24
+
+The plugin requires Android SDK 24 or newer.
+
+[android/app/build.gradle.kts](/d:/Work/jacepm/flutter_biometric/android/app/build.gradle.kts):
+
+```kotlin
+defaultConfig {
+    applicationId = "com.example.flutter_biometric"
+    minSdk = 24
+    targetSdk = flutter.targetSdkVersion
+    versionCode = flutter.versionCode
+    versionName = flutter.versionName
+}
+```
+
+### 5. Install Packages
+
+Run:
+
+```sh
+flutter pub get
+```
+
+## iOS Setup
+
+Face ID usage text is already defined in [ios/Runner/Info.plist](/d:/Work/jacepm/flutter_biometric/ios/Runner/Info.plist):
+
+```xml
+<key>NSFaceIDUsageDescription</key>
+<string>We use biometrics for secure authentication</string>
+```
 
 ## Example Usage
 
-See `lib/main.dart` for a simple UI and usage example:
+The current app uses the package like this:
 
 ```dart
 final biometric = BiometricSignature();
-final result = await biometric.createKeys();
-final sig = await biometric.createSignature(payload: challenge);
+
+final availability = await biometric.biometricAuthAvailable();
+
+final keyResult = await biometric.createKeys(
+  keyFormat: KeyFormat.pem,
+  promptMessage: 'Authenticate to generate your biometric keys',
+);
+
+final signatureResult = await biometric.createSignature(
+  payload: 'sample_challenge_123',
+  promptMessage: 'Authenticate to sign the challenge',
+);
 ```
 
-## Notes
+Important: this plugin often returns failures in `result.code` and `result.error` instead of only throwing exceptions. For that reason, the app checks both success values and returned error metadata.
 
-- This app is for research and development purposes.
-- The `biometric_signature` package handles all biometric prompts and key management securely on the device.
-- No need for the `local_auth` package unless you require its specific APIs.
+## Backend Integration Notes
+
+For a real authentication flow, your backend should:
+
+- Store the public key after registration
+- Generate a fresh random challenge for every authentication attempt
+- Verify the signature using the stored public key
+- Reject replayed or reused challenges
+
+Do not store biometric data or private keys on the backend.
+
+## Testing Notes
+
+For reliable testing:
+
+- Use a real Android or iOS device when possible
+- Make sure at least one biometric method is enrolled
+- Start with `Check Biometric Availability` before generating keys
+- If signing fails, read the displayed error code and reason from the app UI
+- Use `Delete Keys` between test cycles if you want a clean reset
+
+## Troubleshooting
+
+If `biometric_signature` is not working, these are the first things to verify:
+
+- `MainActivity` extends `FlutterFragmentActivity`
+- Android `minSdk` is `24` or higher
+- `USE_BIOMETRIC` permission is present
+- Biometrics are enrolled on the device
+- You are testing on supported hardware or an emulator with biometric support
+- The app shows `canAuthenticate: true` from the availability check
+
+If the app still fails, capture the exact `Code:` and `Message:` shown in the UI. Those values are the fastest way to diagnose whether the issue is enrollment, device support, prompt cancellation, or key availability.
 
 ## Resources
 
 - [biometric_signature pub.dev](https://pub.dev/packages/biometric_signature)
 - [Flutter documentation](https://docs.flutter.dev/)
 
-## Building the APK (Android)
+## Build APK
 
-To build a release APK for Android:
+To build a release APK:
 
-1. Make sure you have Flutter installed and set up for Android development.
-2. Run the following command in your project directory:
+```sh
+flutter build apk --release
+```
 
-   ```sh
-   flutter build apk --release
-   ```
+The APK will be generated at:
 
-3. The generated APK will be located at:
-
-   `build/app/outputs/flutter-apk/app-release.apk`
-
-You can then install this APK on your device for testing or distribution.
+`build/app/outputs/flutter-apk/app-release.apk`
