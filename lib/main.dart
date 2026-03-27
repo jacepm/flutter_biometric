@@ -130,18 +130,19 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Biometric R&D')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          physics: const AlwaysScrollableScrollPhysics(),
           children: [
-            Row(
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
               children: [
                 ElevatedButton(
                   onPressed: generateKeys,
                   child: const Text('Generate Keys'),
                 ),
-                const SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: deleteKeys,
                   child: const Text('Delete Keys'),
@@ -155,7 +156,7 @@ class _HomePageState extends State<HomePage> {
             ),
             if (biometricStatus.isNotEmpty) ...[
               const SizedBox(height: 10),
-              Text('Biometric Status:\n$biometricStatus'),
+              SelectableText('Biometric Status:\n$biometricStatus'),
             ],
             const SizedBox(height: 10),
             SelectableText('Public Key:\n$publicKey'),
@@ -165,7 +166,7 @@ class _HomePageState extends State<HomePage> {
               child: const Text('Sign Challenge'),
             ),
             const SizedBox(height: 10),
-            Text('Challenge: $challenge'),
+            SelectableText('Challenge: $challenge'),
             SelectableText('Signature:\n$signature'),
             if (error.isNotEmpty) ...[
               const SizedBox(height: 10),
